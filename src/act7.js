@@ -58,10 +58,10 @@ function setMovieSelectCallbacks() {
 }
 
 async function _handleOnSelectMovieChanged(event) {
-  const selectedMovie = event.target.value;
+  const movieId = event.target.value;
 
-  if (selectedMovie) {
-    await setMovieHeading(selectedMovie, '.movie__title', '.movie__info', '.movie__director');
+  if (movieId) {
+    await setMovieHeading(movieId, '.movie__title', '.movie__info', '.movie__director');
   }
 }
 
