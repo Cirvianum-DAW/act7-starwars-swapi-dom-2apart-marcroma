@@ -1,17 +1,44 @@
 import swapi from './swapi.js';
 
 //Exemple d'inicialització de la llista de pel·lícules. Falten dades!
-async function setMovieHeading(movieId, titleSelector) {
+async function setMovieHeading(select, titleSelector, infoSelector, directorSelector) {
   // Obtenim els elements del DOM amb QuerySelector
   const title = document.querySelector(titleSelector);
+  const info = document.querySelector(infoSelector);
+  const director = document.querySelector(directorSelector);
 
   // Obtenim la informació de la pelicula
-  const movieInfo = await swapi.getMovieInfo(movieId);
+  const movieInfo = await swapi.getMovieInfo(select);
   // Injectem
   title.innerHTML = movieInfo.name;
+  info.innerHTML = `Episode ${movieInfo.episodeID} - ${movieInfo.release}`;
+  director.innerHTML = movieInfo.director;
+
 }
 
-async function initMovieSelect(selector) {}
+async function initMovieSelect(selector) {
+  // Obtenim el selector del DOM
+  const select = document.querySelector(selector);
+  const option = document.createElement('option');
+  option.value = '';
+  option.text = 'Selecciona una pel·lícula';
+  select.appendChild(option);
+
+  // Obtenim les pel·lícules
+  const movies = await swapi.listMoviesSorted();
+  // Creem les opcions del selector
+  movies.forEach((movie) => {
+    const option = document.createElement('option');
+    option.value = _filmIdToEpisodeId(movie.episodeID);
+    option.text = movie.name;
+    select.appendChild(option);
+
+    select.onchange = () => {
+      setMovieSelectCallbacks();
+    };
+  });
+
+}
 
 function deleteAllCharacterTokens() {}
 
@@ -23,11 +50,29 @@ async function _createCharacterTokens() {}
 
 function _addDivChild(parent, className, html) {}
 
-function setMovieSelectCallbacks() {}
+function setMovieSelectCallbacks() {
+  const selectedMovie = document.querySelector('#select-movie');
 
-async function _handleOnSelectMovieChanged(event) {}
+  selectedMovie.addEventListener('change', _handleOnSelectMovieChanged);
 
-function _filmIdToEpisodeId(episodeID) {}
+}
+
+async function _handleOnSelectMovieChanged(event) {
+  const selectedMovie = event.target.value;
+
+  if (selectedMovie) {
+    await setMovieHeading(selectedMovie, '.movie__title', '.movie__info', '.movie__director');
+  }
+}
+
+function _filmIdToEpisodeId(episodeID) {
+  const mapping = episodeToMovieIDs.find((item) => item.e === episodeID);
+  if (mapping) {
+    return mapping.m;
+  } else {
+    return null;
+  }
+}
 
 // "https://swapi.dev/api/films/1/" --> Episode_id = 4 (A New Hope)
 // "https://swapi.dev/api/films/2/" --> Episode_id = 5 (The Empire Strikes Back)
