@@ -1,18 +1,26 @@
 import swapi from './swapi.js';
 
 //Exemple d'inicialització de la llista de pel·lícules. Falten dades!
-async function setMovieHeading(select, titleSelector, infoSelector, directorSelector) {
+async function setMovieHeading(movieId, titleSelector, infoSelector, directorSelector) {
   // Obtenim els elements del DOM amb QuerySelector
   const title = document.querySelector(titleSelector);
   const info = document.querySelector(infoSelector);
   const director = document.querySelector(directorSelector);
 
+  if (!movieId) {
+    title.innerHTML = null;
+    info.innerHTML = null;
+    director.innerHTML = null;
+    return;
+  } else {
   // Obtenim la informació de la pelicula
-  const movieInfo = await swapi.getMovieInfo(select);
+  const movieInfo = await swapi.getMovieInfo(movieId);
   // Injectem
   title.innerHTML = movieInfo.name;
   info.innerHTML = `Episode ${movieInfo.episodeID} - ${movieInfo.release}`;
   director.innerHTML = movieInfo.director;
+
+  }
 
 }
 
@@ -60,9 +68,8 @@ function setMovieSelectCallbacks() {
 async function _handleOnSelectMovieChanged(event) {
   const movieId = event.target.value;
 
-  if (movieId) {
-    await setMovieHeading(movieId, '.movie__title', '.movie__info', '.movie__director');
-  }
+  await setMovieHeading(movieId, '.movie__title', '.movie__info', '.movie__director');
+  
 }
 
 function _filmIdToEpisodeId(episodeID) {
