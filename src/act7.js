@@ -21,7 +21,6 @@ async function setMovieHeading(movieId, titleSelector, infoSelector, directorSel
   director.innerHTML = movieInfo.director;
 
   }
-
 }
 
 async function initMovieSelect(selector) {
@@ -45,18 +44,74 @@ async function initMovieSelect(selector) {
       setMovieSelectCallbacks();
     };
   });
-
 }
 
-function deleteAllCharacterTokens() {}
+function deleteAllCharacterTokens() {
+}
 
 // EVENT HANDLERS //
 
-function addChangeEventToSelectHomeworld() {}
+function addChangeEventToSelectHomeworld() {
+  document.querySelector('.list__characters').innerHTML = '';
+  
+  const selectHomeworld = document.querySelector('#select-homeworld');
+  selectHomeworld.addEventListener('change', _createCharacterTokens);
 
-async function _createCharacterTokens() {}
+}
 
-function _addDivChild(parent, className, html) {}
+async function _createCharacterTokens(event) {
+  const homeworld = document.querySelector('#select-homeworld').value;
+  const movieId = document.querySelector('#select-movie').value;
+
+  if (!homeworld) {
+    throw Error('No homeworld selected.');
+  }
+
+  if (!movieId) {
+    throw Error('No movie selected.');
+  }
+
+  const characters = await swapi.getMovieCharactersAndHomeworlds(movieId);
+
+  const charactersFromHomeworld = characters.characters.filter((character) => character.homeworld === homeworld);
+
+  const listCharacters = document.querySelector('.list__characters');
+  listCharacters.innerHTML = '';
+
+  charactersFromHomeworld.forEach((character) => {
+    const li = document.createElement('li');
+    li.classList.add('list__item', 'item' ,'character');
+    listCharacters.appendChild(li);
+
+    const img = document.createElement('img');
+    const urlParts = character.url.split('/');
+    const id = urlParts[urlParts.length - 1];
+
+    img.src = `./assets/people/${id}.jpg`;
+    img.classList.add('character__image');
+    img.style.maxWidth='100%';
+    li.appendChild(img);
+
+    const h2 = document.createElement('h2');
+    h2.classList.add('character__name');
+    h2.innerHTML = character.name;
+    li.appendChild(h2);
+
+    _addDivChild(li, 'character__birth', `<strong>Birth Year:</strong> ${character.birth_year}`);
+    _addDivChild(li, 'character__eye', `<strong>Eye Color:</strong> ${character.eye_color}`);
+    _addDivChild(li, 'character__gender', `<strong>Gender:</strong> ${character.gender}`);
+    _addDivChild(li, 'character__home', `<strong>Homeworld:</strong> ${character.homeworld}`);
+
+  })
+
+}
+
+function _addDivChild(parent, className, html) {
+  const div = document.createElement('div');
+  div.classList.add(className);
+  div.innerHTML = html;
+  parent.appendChild(div);
+}
 
 function setMovieSelectCallbacks() {
   const selectedMovie = document.querySelector('#select-movie');
@@ -69,6 +124,16 @@ async function _handleOnSelectMovieChanged(event) {
   const movieId = event.target.value;
 
   await setMovieHeading(movieId, '.movie__title', '.movie__info', '.movie__director');
+
+  const characters = await swapi.getMovieCharactersAndHomeworlds(movieId);
+
+  const homeworlds = characters.characters.map((character) => character.homeworld);
+
+  const uniqueHomeworlds = _removeDuplicatesAndSort(homeworlds);
+
+  _populateHomeWorldSelector(uniqueHomeworlds);
+
+  document.querySelector('.list__characters').innerHTML = '';
   
 }
 
@@ -99,18 +164,32 @@ let episodeToMovieIDs = [
 
 function _setMovieHeading({ name, episodeID, release, director }) {}
 
-function _populateHomeWorldSelector(homeworlds) {}
+function _populateHomeWorldSelector(homeworlds) {
+
+  const selector = document.querySelector('#select-homeworld');
+  selector.innerHTML = '';
+
+  const option = document.createElement('option');
+  option.value = '';
+  option.text = 'Selecciona un planeta';
+  selector.appendChild(option);
+
+  homeworlds.forEach((homeworld) => {
+    const option = document.createElement('option');
+    option.value = homeworld;
+    option.text = homeworld;
+    selector.appendChild(option);
+  });
+
+}
 
 /**
  * Funció auxiliar que podem reutilitzar: eliminar duplicats i ordenar alfabèticament un array.
  */
 function _removeDuplicatesAndSort(elements) {
-  // Al crear un Set eliminem els duplicats
-  const set = new Set(elements);
-  // tornem a convertir el Set en un array
-  const array = Array.from(set);
-  // i ordenem alfabèticament
-  return array.sort(swapi._compareByName);
+  const array = [...new Set(elements)];
+  array.sort();
+  return array;
 }
 
 const act7 = {
